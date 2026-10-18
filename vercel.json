@@ -4,12 +4,6 @@
       "includeFiles": "index.html"
     }
   },
-  "crons": [
-    {
-      "path": "/api/morning",
-      "schedule": "0 0 * * *"
-    }
-  ],
   "redirects": [
     {
       "source": "/((?!api/).*)",

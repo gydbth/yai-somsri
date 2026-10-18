@@ -24,4 +24,4 @@ npx serve .
 
 ## LINE OA
 
-ยายสมศรีมีบัญชี LINE OA ได้ เปิดเว็บจาก Rich menu และส่งคำคมทุกเช้า 7 โมงผ่าน `api/morning.js` กับ Vercel Cron ดูขั้นตอนตั้งค่าที่ [docs/line-setup.md](docs/line-setup.md)
+ยายสมศรีมีบัญชี LINE OA เปิดเว็บจาก Rich menu ได้ และสั่งส่งคำคมให้เพื่อนทุกคนเป็นครั้งคราวได้ผ่าน `api/morning.js` (ไม่ได้ส่งอัตโนมัติทุกวัน เพื่อประหยัดโควตาข้อความ) ดูขั้นตอนที่ [docs/line-setup.md](docs/line-setup.md)

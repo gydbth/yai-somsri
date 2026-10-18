@@ -1,9 +1,9 @@
-// Every morning Grandma Somsri sends one quote to everyone who added her LINE Official Account.
-// Triggered by the Vercel Cron in vercel.json (07:00 Thailand time).
+// Sends today's quote from Grandma Somsri to everyone who added her LINE Official Account.
+// Not scheduled: the daily cron was removed to save LINE message quota, so call it by hand when you want to send.
 //
 // Environment variables (set in Vercel → Settings → Environment Variables):
 //   LINE_CHANNEL_ACCESS_TOKEN  long-lived token from LINE Developers → Messaging API
-//   CRON_SECRET                any long random string; Vercel Cron sends it back as "Authorization: Bearer …"
+//   CRON_SECRET                any long random string; send it as "Authorization: Bearer …" when calling
 //
 // GET /api/morning?dry=1 (with the same Authorization header) returns the message without sending it.
 
@@ -78,7 +78,7 @@ module.exports = async (req, res) => {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
-      // LINE ignores a repeat with the same key, so a retried cron never sends twice
+      // LINE ignores a repeat with the same key, so a retried call never sends twice
       "X-Line-Retry-Key": crypto.randomUUID()
     },
     body: JSON.stringify({ messages: [message] })
