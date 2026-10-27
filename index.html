@@ -1371,7 +1371,8 @@ async function makeStory(text, platform) {
   ctx.fillText(m ? `ยายสมศรีฝากมา ตอนหลาน${m.label}` : "ยายสมศรีฝากมาบอก", cx, P.top + 60);
 
   // Grandma standing on the floor
-  const GH = 640, GW = GH * 200 / 250, gTop = floorY + 120 - GH;
+  // Leave the speech bubble at least ~300px; on platforms with a tall top bar (TikTok) grandma shrinks a little instead
+  const GH = Math.max(480, Math.min(640, floorY + 120 - (P.top + 100) - 30 - 300)), GW = GH * 200 / 250, gTop = floorY + 120 - GH;
   const gm = m ? { outfit: m.outfit, pose: m.pose, face: m.face } : { outfit: "home", pose: "hug", face: "gentle" };
   ctx.fillStyle = m ? m.glow : "#f6e1c8"; ctx.beginPath(); ctx.arc(cx, gTop + GH * .45, GW * .55, 0, Math.PI * 2); ctx.fill();
   try { const img = await loadSVG(grandmaSVG(gm, false)); ctx.drawImage(img, cx - GW / 2, gTop, GW, GH); } catch (e) {}
