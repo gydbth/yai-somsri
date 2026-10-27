@@ -217,6 +217,10 @@ button:focus-visible, input:focus-visible { outline: 2.5px solid var(--honey); o
       <button type="button" data-platform="tiktok" aria-pressed="false">TikTok</button>
       <button type="button" data-platform="fb" aria-pressed="false">Facebook</button>
     </div>
+    <div class="seg" id="tiktokFormat" role="group" aria-label="ลง TikTok แบบไหน" hidden>
+      <button type="button" data-format="story" aria-pressed="true">สตอรี่</button>
+      <button type="button" data-format="post" aria-pressed="false">โพสต์</button>
+    </div>
     <div class="preview"><img id="storyImg" alt="การ์ดสตอรี่คำยายพร้อม QR code"></div>
     <button class="pill" id="nativeShare" type="button">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/></svg>
@@ -843,6 +847,9 @@ const PLATFORMS = {
             steps: ["<b>กดค้างที่รูป</b> แล้วเลือกบันทึกรูปภาพ", "เปิด <b>Instagram</b> ปัดไปทางขวา หรือกด + แล้วเลือก <b>สตอรี่</b>", "เลือกรูปนี้จากคลังรูปภาพ", "กด <b>สตอรี่ของคุณ</b>"] },
   tiktok: { name: "TikTok Stories", top: 330, bottom: 400, right: 190,
             steps: ["<b>กดค้างที่รูป</b> แล้วเลือกบันทึกรูปภาพ", "เปิด <b>TikTok</b> แล้วกดปุ่ม <b>+</b>", "กด <b>อัปโหลด</b> แล้วเลือกรูปนี้", "เลือกโพสต์เป็น <b>สตอรี่</b>"] },
+  // A TikTok photo post: 3:4, shown in the feed under the caption and the like/comment column, so grandma moves aside and the quote gets the room
+  tiktokPost: { name: "TikTok โพสต์", post: true, h: 1440, top: 90, bottom: 200, right: 150, left: 70, floor: 260,
+            steps: ["<b>กดค้างที่รูป</b> แล้วเลือกบันทึกรูปภาพ", "เปิด <b>TikTok</b> แล้วกดปุ่ม <b>+</b>", "กด <b>อัปโหลด</b> แล้วเลือกรูปนี้ กด <b>ถัดไป</b>", "ใส่แคปชัน แล้วกด <b>โพสต์</b>"] },
   fb:     { name: "Facebook Stories", top: 240, bottom: 300, right: 96,
             steps: ["<b>กดค้างที่รูป</b> แล้วเลือกบันทึกรูปภาพ", "เปิด <b>Facebook</b> แล้วกด <b>สร้างสตอรี่</b>", "เลือกรูปนี้จากคลังรูปภาพ", "กด <b>แชร์ไปยังสตอรี่</b>"] }
 };
@@ -1350,17 +1357,17 @@ const currentQuote = () => data.quote || todaysQuote();
 
 async function makeStory(text, platform) {
   try { await Promise.all(["300 40px Kanit", "400 60px Kanit", "500 80px Kanit"].map(f => document.fonts.load(f))); } catch (e) {}
-  const P = PLATFORMS[platform], W = 1080, H = 1920, F = '"Kanit", "Sukhumvit Set", sans-serif';
+  const P = PLATFORMS[platform], W = 1080, H = P.h || 1920, F = '"Kanit", "Sukhumvit Set", sans-serif';
   const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
   const ctx = cv.getContext("2d"), m = M();
-  const X = 90, right = W - P.right, cx = (X + right) / 2, maxW = right - X;
+  const X = P.left || 90, right = W - P.right, cx = (X + right) / 2, maxW = right - X;
 
   // Wall, window light, floor
   const wall = ctx.createLinearGradient(0, 0, 0, H); wall.addColorStop(0, "#fbf1e2"); wall.addColorStop(1, "#f1dcbf");
   ctx.fillStyle = wall; ctx.fillRect(0, 0, W, H);
   const glow = ctx.createRadialGradient(W - 220, P.top + 120, 0, W - 220, P.top + 120, 520);
   glow.addColorStop(0, "rgba(255,226,150,.75)"); glow.addColorStop(1, "rgba(255,226,150,0)"); ctx.fillStyle = glow; ctx.fillRect(0, 0, W, H);
-  const floorY = H - P.bottom - 380;
+  const floorY = H - P.bottom - (P.floor || 380);
   ctx.fillStyle = "#d9b48a"; ctx.fillRect(0, floorY, W, H - floorY);
   ctx.fillStyle = "#c39566"; ctx.fillRect(0, floorY, W, 8);
   ctx.fillStyle = "rgba(0,0,0,.05)"; for (let x = 0; x < W; x += 150) ctx.fillRect(x, floorY + 8, 4, H);
@@ -1372,25 +1379,27 @@ async function makeStory(text, platform) {
 
   // Grandma standing on the floor
   // Leave the speech bubble at least ~300px; on platforms with a tall top bar (TikTok) grandma shrinks a little instead
-  const GH = Math.max(480, Math.min(640, floorY + 120 - (P.top + 100) - 30 - 300)), GW = GH * 200 / 250, gTop = floorY + 120 - GH;
+  // On a post she stands to the right, beside the QR panel
+  const GH = P.post ? 500 : Math.max(480, Math.min(640, floorY + 120 - (P.top + 100) - 30 - 300)), GW = GH * 200 / 250, gTop = floorY + 120 - GH;
+  const gx = P.post ? right - GW / 2 : cx;
   const gm = m ? { outfit: m.outfit, pose: m.pose, face: m.face } : { outfit: "home", pose: "hug", face: "gentle" };
-  ctx.fillStyle = m ? m.glow : "#f6e1c8"; ctx.beginPath(); ctx.arc(cx, gTop + GH * .45, GW * .55, 0, Math.PI * 2); ctx.fill();
-  try { const img = await loadSVG(grandmaSVG(gm, false)); ctx.drawImage(img, cx - GW / 2, gTop, GW, GH); } catch (e) {}
+  ctx.fillStyle = m ? m.glow : "#f6e1c8"; ctx.beginPath(); ctx.arc(gx, gTop + GH * .45, GW * .55, 0, Math.PI * 2); ctx.fill();
+  try { const img = await loadSVG(grandmaSVG(gm, false)); ctx.drawImage(img, gx - GW / 2, gTop, GW, GH); } catch (e) {}
 
   // Speech bubble with the quote
   const bTop = P.top + 100, bBottom = gTop - 30, bw = maxW, bx = X;
-  let size = 76, lines;
+  let size = P.post ? 84 : 76, lines;
   do { ctx.font = `500 ${size}px ${F}`; lines = balancedLines(ctx, text, bw - 120); size -= 4; } while (lines.length * size * 1.45 + 120 > bBottom - bTop && size > 44);
   size += 4; const lh = size * 1.45, bh = Math.min(bBottom - bTop, lines.length * lh + 110), by = bTop + (bBottom - bTop - bh) / 2;
   ctx.save(); ctx.shadowColor = "rgba(80,50,30,.14)"; ctx.shadowBlur = 40; ctx.shadowOffsetY = 14;
   roundRect(ctx, bx, by, bw, bh, 56); ctx.fillStyle = "#ffffff"; ctx.fill();
-  ctx.beginPath(); ctx.moveTo(cx - 34, by + bh - 2); ctx.lineTo(cx, by + bh + 46); ctx.lineTo(cx + 34, by + bh - 2); ctx.closePath(); ctx.fill(); ctx.restore();
+  ctx.beginPath(); ctx.moveTo(gx - 34, by + bh - 2); ctx.lineTo(gx, by + bh + 46); ctx.lineTo(gx + 34, by + bh - 2); ctx.closePath(); ctx.fill(); ctx.restore();
   ctx.font = `500 ${size}px ${F}`; ctx.fillStyle = "#33251f";
   lines.forEach((l, i) => ctx.fillText(l, cx, by + 55 + size * .95 + i * lh));
 
   // QR panel
   ctx.textAlign = "left";
-  const ph = 180, pw = Math.min(maxW, 560), px = cx - pw / 2, py = H - P.bottom - ph;
+  const ph = 180, pw = P.post ? 440 : Math.min(maxW, 560), px = P.post ? X : cx - pw / 2, py = H - P.bottom - ph;
   ctx.save(); ctx.shadowColor = "rgba(80,50,30,.18)"; ctx.shadowBlur = 36; ctx.shadowOffsetY = 10;
   roundRect(ctx, px, py, pw, ph, 44); ctx.fillStyle = "#fffaf2"; ctx.fill(); ctx.restore();
   const qs = 136, qx = px + 22, qy = py + (ph - qs) / 2;
@@ -1409,14 +1418,21 @@ async function makeStory(text, platform) {
 
 /* ---------- Share sheet ---------- */
 let storyURL = null, lastFocus = null, platform = PLATFORMS[store.get("platform", "ig")] ? store.get("platform", "ig") : "ig";
+let tiktokFormat = store.get("tiktokFormat", "story") === "post" ? "post" : "story";
+const cardKey = () => platform === "tiktok" && tiktokFormat === "post" ? "tiktokPost" : platform;
 const caption = () => currentQuote() + "\n\nมาคุยกับยายสมศรีได้ทุกเช้าที่ " + APP_URL + "\n#ยายสมศรี #คำยาย #กำลังใจ";
 async function renderStory() {
-  const P = PLATFORMS[platform];
+  const key = cardKey(), P = PLATFORMS[key];
   document.querySelectorAll("[data-platform]").forEach(b => b.setAttribute("aria-pressed", b.dataset.platform === platform));
+  $("tiktokFormat").hidden = platform !== "tiktok";
+  document.querySelectorAll("[data-format]").forEach(b => b.setAttribute("aria-pressed", b.dataset.format === tiktokFormat));
+  $("sheetTitle").textContent = P.post ? "ส่งคำยายลงโพสต์" : "ส่งคำยายลงสตอรี่";
+  $("storyImg").style.aspectRatio = `1080 / ${P.h || 1920}`;
+  $("storyImg").alt = P.post ? "การ์ดโพสต์คำยายพร้อม QR code" : "การ์ดสตอรี่คำยายพร้อม QR code";
   $("nativeLabel").textContent = "แชร์ไปที่ " + P.name;
   $("how").innerHTML = P.steps.map(s => "<li>" + s + "</li>").join("");
   $("storyImg").style.opacity = ".35";
-  storyURL = await makeStory(currentQuote(), platform);
+  storyURL = await makeStory(currentQuote(), key);
   $("storyImg").src = storyURL; $("storyImg").style.opacity = "";
 }
 async function openShare() {
@@ -1424,6 +1440,7 @@ async function openShare() {
   $("sheet").hidden = false; renderStory(); $("closeSheet").focus();
 }
 document.querySelectorAll("[data-platform]").forEach(b => b.addEventListener("click", () => { platform = b.dataset.platform; store.set("platform", platform); renderStory(); }));
+document.querySelectorAll("[data-format]").forEach(b => b.addEventListener("click", () => { tiktokFormat = b.dataset.format; store.set("tiktokFormat", tiktokFormat); renderStory(); }));
 function closeSheet() { $("sheet").hidden = true; if (lastFocus && lastFocus.isConnected) lastFocus.focus(); }
 $("closeSheet").addEventListener("click", closeSheet);
 $("sheet").addEventListener("click", e => { if (e.target === $("sheet")) closeSheet(); });
@@ -1433,7 +1450,7 @@ $("nativeShare").addEventListener("click", async () => {
   if (!storyURL) return;
   try {
     const blob = await (await fetch(storyURL)).blob();
-    const file = new File([blob], "yai-somsri-story.png", { type: "image/png" });
+    const file = new File([blob], PLATFORMS[cardKey()].post ? "yai-somsri-post.png" : "yai-somsri-story.png", { type: "image/png" });
     if (!navigator.canShare || !navigator.canShare({ files: [file] })) throw new Error("unsupported");
     await navigator.share({ files: [file], text: caption() });
   } catch (e) {
