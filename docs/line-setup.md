@@ -54,7 +54,7 @@
 
 ### 6. เปิด Messaging API
 1. ใน LINE OA Manager: **ตั้งค่า → Messaging API → เปิดใช้งาน Messaging API**
-2. ถ้าระบบถาม Provider ให้สร้างใหม่ ชื่ออะไรก็ได้ เช่น `แสงเช้า`
+2. ถ้าระบบถาม Provider ให้สร้างใหม่ ชื่ออะไรก็ได้ เช่น `ยายสมศรี`
 3. เข้า https://developers.line.biz/console → เลือก Provider → เลือก Channel "ยายสมศรี"
 4. แท็บ **Messaging API** → เลื่อนลงไปที่ **Channel access token (long-lived)** → กด **Issue** แล้วคัดลอกไว้
    - **อย่าแชร์ token นี้ให้ใคร และอย่าวางลงในโค้ดหรือในแชท** ใครได้ token ไปจะส่งข้อความในนามยายสมศรีได้

@@ -6,10 +6,10 @@
 <meta name="color-scheme" content="only light">
 <meta name="description" content="คุยกับยายสมศรีทุกเช้า บอกความรู้สึก แล้วยายจะให้กำลังใจ ให้คำคม และกอดก่อนออกจากบ้าน">
 <meta name="theme-color" content="#fffaf2">
-<meta property="og:title" content="แสงเช้า · คุยกับยายสมศรี">
+<meta property="og:title" content="ยายสมศรี · คุยกับยายทุกเช้า">
 <meta property="og:description" content="กำลังใจจากยายทุกเช้า ก่อนออกไปใช้ชีวิต">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23e9b44c'/%3E%3Ccircle cx='32' cy='32' r='18' fill='%23fff3c4'/%3E%3C/svg%3E">
-<title>แสงเช้า</title>
+<title>ยายสมศรี</title>
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1386,13 +1386,13 @@ async function makeStory(text, platform) {
   ctx.fillStyle = "#33251f"; ctx.font = `500 38px ${F}`; ctx.fillText("คุยกับยายสมศรี", tx, py + 76);
   ctx.font = `300 28px ${F}`; ctx.fillStyle = "#7b6a60";
   ctx.fillText("สแกนให้ยายกอด", tx, py + 118);
-  ctx.fillText("ทุกเช้าที่แสงเช้า", tx, py + 154);
+  ctx.fillText("ได้ทุกเช้านะลูก", tx, py + 154);
   return cv.toDataURL("image/png");
 }
 
 /* ---------- Share sheet ---------- */
 let storyURL = null, lastFocus = null, platform = PLATFORMS[store.get("platform", "ig")] ? store.get("platform", "ig") : "ig";
-const caption = () => currentQuote() + "\n\nคุยกับยายสมศรีทุกเช้าที่แสงเช้า " + APP_URL + "\n#แสงเช้า #คำยาย #กำลังใจ";
+const caption = () => currentQuote() + "\n\nมาคุยกับยายสมศรีได้ทุกเช้าที่ " + APP_URL + "\n#ยายสมศรี #คำยาย #กำลังใจ";
 async function renderStory() {
   const P = PLATFORMS[platform];
   document.querySelectorAll("[data-platform]").forEach(b => b.setAttribute("aria-pressed", b.dataset.platform === platform));
@@ -1416,7 +1416,7 @@ $("nativeShare").addEventListener("click", async () => {
   if (!storyURL) return;
   try {
     const blob = await (await fetch(storyURL)).blob();
-    const file = new File([blob], "saengchao-story.png", { type: "image/png" });
+    const file = new File([blob], "yai-somsri-story.png", { type: "image/png" });
     if (!navigator.canShare || !navigator.canShare({ files: [file] })) throw new Error("unsupported");
     await navigator.share({ files: [file], text: caption() });
   } catch (e) {
