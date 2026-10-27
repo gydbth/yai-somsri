@@ -848,7 +848,7 @@ const PLATFORMS = {
   tiktok: { name: "TikTok Stories", top: 330, bottom: 400, right: 190,
             steps: ["<b>กดค้างที่รูป</b> แล้วเลือกบันทึกรูปภาพ", "เปิด <b>TikTok</b> แล้วกดปุ่ม <b>+</b>", "กด <b>อัปโหลด</b> แล้วเลือกรูปนี้", "เลือกโพสต์เป็น <b>สตอรี่</b>"] },
   // A TikTok photo post: full-screen 9:16 in the feed, under the For You tabs, the caption and the like/comment column, so grandma moves aside and the quote gets the room
-  tiktokPost: { name: "TikTok โพสต์", post: true, top: 150, bottom: 440, right: 170, left: 70, floor: 300,
+  tiktokPost: { name: "TikTok โพสต์", post: true, top: 150, bottom: 440, right: 170, left: 110, floor: 400,
             steps: ["<b>กดค้างที่รูป</b> แล้วเลือกบันทึกรูปภาพ", "เปิด <b>TikTok</b> แล้วกดปุ่ม <b>+</b>", "กด <b>อัปโหลด</b> แล้วเลือกรูปนี้ กด <b>ถัดไป</b>", "ใส่แคปชัน แล้วกด <b>โพสต์</b>"] },
   fb:     { name: "Facebook Stories", top: 240, bottom: 300, right: 96,
             steps: ["<b>กดค้างที่รูป</b> แล้วเลือกบันทึกรูปภาพ", "เปิด <b>Facebook</b> แล้วกด <b>สร้างสตอรี่</b>", "เลือกรูปนี้จากคลังรูปภาพ", "กด <b>แชร์ไปยังสตอรี่</b>"] }
@@ -1399,7 +1399,7 @@ async function makeStory(text, platform) {
 
   // QR panel
   ctx.textAlign = "left";
-  const ph = 180, pw = P.post ? 440 : Math.min(maxW, 560), px = P.post ? X : cx - pw / 2, py = H - P.bottom - ph;
+  const ph = 180, pw = P.post ? 470 : Math.min(maxW, 560), px = P.post ? X : cx - pw / 2, py = H - P.bottom - ph;
   ctx.save(); ctx.shadowColor = "rgba(80,50,30,.18)"; ctx.shadowBlur = 36; ctx.shadowOffsetY = 10;
   roundRect(ctx, px, py, pw, ph, 44); ctx.fillStyle = "#fffaf2"; ctx.fill(); ctx.restore();
   const qs = 136, qx = px + 22, qy = py + (ph - qs) / 2;
