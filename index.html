@@ -841,7 +841,7 @@ const RECALL = {
 const PLATFORMS = {
   ig:     { name: "Instagram Stories", top: 250, bottom: 290, right: 96,
             steps: ["<b>กดค้างที่รูป</b> แล้วเลือกบันทึกรูปภาพ", "เปิด <b>Instagram</b> ปัดไปทางขวา หรือกด + แล้วเลือก <b>สตอรี่</b>", "เลือกรูปนี้จากคลังรูปภาพ", "กด <b>สตอรี่ของคุณ</b>"] },
-  tiktok: { name: "TikTok Stories", top: 220, bottom: 480, right: 190,
+  tiktok: { name: "TikTok Stories", top: 330, bottom: 400, right: 190,
             steps: ["<b>กดค้างที่รูป</b> แล้วเลือกบันทึกรูปภาพ", "เปิด <b>TikTok</b> แล้วกดปุ่ม <b>+</b>", "กด <b>อัปโหลด</b> แล้วเลือกรูปนี้", "เลือกโพสต์เป็น <b>สตอรี่</b>"] },
   fb:     { name: "Facebook Stories", top: 240, bottom: 300, right: 96,
             steps: ["<b>กดค้างที่รูป</b> แล้วเลือกบันทึกรูปภาพ", "เปิด <b>Facebook</b> แล้วกด <b>สร้างสตอรี่</b>", "เลือกรูปนี้จากคลังรูปภาพ", "กด <b>แชร์ไปยังสตอรี่</b>"] }
@@ -1313,9 +1313,17 @@ $("form").addEventListener("submit", async e => {
 });
 
 /* ---------- Story card (1080 × 1920) ---------- */
+// Words that must not end a line (ความ|สุข) and endings that must not start one (|นะลูก)
+const GLUE_NEXT = new Set(["ความ", "การ", "น่า", "ไม่"]);
+const GLUE_PREV = new Set(["นะ", "จ้ะ", "จ้า", "ลูก", "เลย", "ด้วย", "หรอก", "แล้ว", "กัน", "ค่ะ", "ครับ"]);
 function thaiWords(text) {
-  if (window.Intl && Intl.Segmenter) return Array.from(new Intl.Segmenter("th", { granularity: "word" }).segment(text), s => s.segment);
-  return Array.from(text);
+  if (!(window.Intl && Intl.Segmenter)) return Array.from(text);
+  const out = [];
+  for (const { segment: s } of new Intl.Segmenter("th", { granularity: "word" }).segment(text)) {
+    const prev = out[out.length - 1];
+    if (prev && (GLUE_NEXT.has(prev.trim()) || GLUE_PREV.has(s.trim()))) out[out.length - 1] = prev + s; else out.push(s);
+  }
+  return out;
 }
 // Thai has no spaces between words, but a space marks a phrase break: keep phrases whole, split a phrase only if it alone is too wide
 function wrapLines(ctx, text, maxW) {
@@ -1327,6 +1335,14 @@ function wrapLines(ctx, text, maxW) {
   }
   if (line.trim()) lines.push(line.trim());
   return lines;
+}
+// Same line count, but as narrow as possible so the lines come out even instead of one long line and a short tail
+function balancedLines(ctx, text, maxW) {
+  const lines = wrapLines(ctx, text, maxW);
+  if (lines.length < 2) return lines;
+  let lo = maxW / 2, hi = maxW;
+  while (hi - lo > 4) { const mid = (lo + hi) / 2; if (wrapLines(ctx, text, mid).length === lines.length) hi = mid; else lo = mid; }
+  return wrapLines(ctx, text, hi);
 }
 function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
 function loadSVG(svg) { return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg); }); }
@@ -1363,7 +1379,7 @@ async function makeStory(text, platform) {
   // Speech bubble with the quote
   const bTop = P.top + 100, bBottom = gTop - 30, bw = maxW, bx = X;
   let size = 76, lines;
-  do { ctx.font = `500 ${size}px ${F}`; lines = wrapLines(ctx, text, bw - 120); size -= 4; } while (lines.length * size * 1.45 + 120 > bBottom - bTop && size > 44);
+  do { ctx.font = `500 ${size}px ${F}`; lines = balancedLines(ctx, text, bw - 120); size -= 4; } while (lines.length * size * 1.45 + 120 > bBottom - bTop && size > 44);
   size += 4; const lh = size * 1.45, bh = Math.min(bBottom - bTop, lines.length * lh + 110), by = bTop + (bBottom - bTop - bh) / 2;
   ctx.save(); ctx.shadowColor = "rgba(80,50,30,.14)"; ctx.shadowBlur = 40; ctx.shadowOffsetY = 14;
   roundRect(ctx, bx, by, bw, bh, 56); ctx.fillStyle = "#ffffff"; ctx.fill();
