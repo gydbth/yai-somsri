@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="only light">
 <meta name="description" content="คุยกับยายสมศรีทุกเช้า บอกความรู้สึก แล้วยายจะให้กำลังใจ ให้คำคม และกอดก่อนออกจากบ้าน">
 <meta name="theme-color" content="#fffaf2">
 <meta property="og:title" content="แสงเช้า · คุยกับยายสมศรี">
@@ -17,7 +18,7 @@
 /* Layout: a chat with Grandma Somsri at home. Top: her living room in morning light, with her changing clothes and pose to match how you feel.
    Below: the chat, quick replies, and a text box. Warm single light look by design. */
 :root {
-  color-scheme: light;
+  color-scheme: only light;
   --wall: #fbf1e2;
   --wall-2: #f4e2c9;
   --floor: #d9b48a;
@@ -36,6 +37,12 @@
 html, body { height: 100%; }
 body { margin: 0; background: var(--cream); color: var(--ink); font-family: var(--f); font-weight: 300; font-size: 16px; line-height: 1.55; overflow: hidden; }
 [hidden] { display: none !important; }
+/* Grandma's house is a warm, light room by design. Declaring how the page looks in dark mode
+   (the same warm colours) stops browsers such as Samsung Internet from auto-darkening it. */
+@media (prefers-color-scheme: dark) {
+  :root { color-scheme: only light; }
+  html, body { background: var(--cream); color: var(--ink); }
+}
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 button { font: inherit; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 button:focus-visible, input:focus-visible { outline: 2.5px solid var(--honey); outline-offset: 2px; }
